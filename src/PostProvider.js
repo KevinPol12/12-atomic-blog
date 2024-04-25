@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -53,4 +53,15 @@ function PostProvider({ children }) {
   );
 }
 
-export { PostProvider, PostContext };
+function usePosts() {
+  const context = useContext(PostContext);
+  if (context === undefined)
+    throw new Error("PostContext was used outside of the PostProvider");
+  /*This error is to let know if the context was attempted to be consumed 
+  outside of the child components (or scope) where the context was defined  
+  Ex. if usePosts is called from the App component then it is out of this context
+  scope*/
+  return context;
+}
+
+export { PostProvider, usePosts };
