@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -7,6 +7,11 @@ function createRandomPost() {
     body: faker.hacker.phrase(),
   };
 }
+
+/*We can create the context api anywhere but it makes sense to put it outside and above of the App. */
+/*Make sure it gets imported from "react" */
+/*CONTEXT API - Step 1/3: Create a NEW CONTEXT API*/
+const PostContext = createContext();
 
 function App() {
   const [posts, setPosts] = useState(() =>
@@ -42,38 +47,56 @@ function App() {
   );
 
   return (
-    <section>
-      <button
-        onClick={() => setIsFakeDark((isFakeDark) => !isFakeDark)}
-        className="btn-fake-dark-mode"
-      >
-        {isFakeDark ? "☀️" : "🌙"}
-      </button>
+    /*CONTEXT API - Step 2/3: PROVIDE VALUE TO CHILD COMPONENTS*/
+    <PostContext.Provider
+      value={{
+        posts: searchedPosts,
+        onAddPost: handleAddPost,
+        onClearPosts: handleClearPosts,
+        /*This context api we created, we named it PostContext. However, to make our code cleaner we could create a second context such as SearchContext for
+        the two below - but for now to keep it simple we will put em all together. */
+        searchQuery,
+        setSearchQuery,
+      }}
+    >
+      <section>
+        <button
+          onClick={() => setIsFakeDark((isFakeDark) => !isFakeDark)}
+          className="btn-fake-dark-mode"
+        >
+          {isFakeDark ? "☀️" : "🌙"}
+        </button>
 
-      <Header
-        posts={searchedPosts}
-        onClearPosts={handleClearPosts}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-      <Main posts={searchedPosts} onAddPost={handleAddPost} />
-      <Archive onAddPost={handleAddPost} />
-      <Footer />
-    </section>
+        <Header
+        /**Removing all of this props as we will now get them through the context api */
+        // posts={searchedPosts}
+        // onClearPosts={handleClearPosts}
+        // searchQuery={searchQuery}
+        // setSearchQuery={setSearchQuery}
+        />
+        <Main posts={searchedPosts} onAddPost={handleAddPost} />
+        <Archive onAddPost={handleAddPost} />
+        <Footer />
+      </section>
+    </PostContext.Provider>
   );
 }
 
-function Header({ posts, onClearPosts, searchQuery, setSearchQuery }) {
+function Header() {
+  /*CONTEXT API - Step 3/3: CONSUMING THE CONTEXT*/
+  const { onClearPosts } = useContext(PostContext);
   return (
     <header>
       <h1>
         <span>⚛️</span>The Atomic Blog
       </h1>
       <div>
-        <Results posts={posts} />
+        <Results
+        /*posts={posts}*/
+        />
         <SearchPosts
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
+        /*searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}*/
         />
         <button onClick={onClearPosts}>Clear posts</button>
       </div>
@@ -81,7 +104,8 @@ function Header({ posts, onClearPosts, searchQuery, setSearchQuery }) {
   );
 }
 
-function SearchPosts({ searchQuery, setSearchQuery }) {
+function SearchPosts() {
+  const { searchQuery, setSearchQuery } = useContext(PostContext);
   return (
     <input
       value={searchQuery}
@@ -91,7 +115,8 @@ function SearchPosts({ searchQuery, setSearchQuery }) {
   );
 }
 
-function Results({ posts }) {
+function Results() {
+  const { posts } = useContext(PostContext);
   return <p>🚀 {posts.length} atomic posts found</p>;
 }
 
