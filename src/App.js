@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
 import { PostProvider, usePosts } from "./PostProvider";
+import { Test, SlowComponent } from "./Test";
 
 function createRandomPost() {
   return {
@@ -124,14 +125,24 @@ function List() {
   const { posts } = usePosts();
 
   return (
-    <ul>
-      {posts.map((post, i) => (
-        <li key={i}>
-          <h3>{post.title}</h3>
-          <p>{post.body}</p>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul>
+        {posts.map((post, i) => (
+          <li key={i}>
+            <h3>{post.title}</h3>
+            <p>{post.body}</p>
+          </li>
+        ))}
+      </ul>
+      {/*A). Not using the children prop to separate code rendering */}
+      {/* <Test /> */}
+
+      {/*B). Using Children to avoid rerendering both components when 
+      Test is rerendered. */}
+      <Test>
+        <SlowComponent />
+      </Test>
+    </>
   );
 }
 
