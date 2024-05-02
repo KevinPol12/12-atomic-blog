@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { faker } from "@faker-js/faker";
 
 function createRandomPost() {
@@ -35,32 +35,32 @@ function PostProvider({ children }) {
     setPosts([]);
   }
 
-  return (
-    /*CONTEXT API - Step 2/3: PROVIDE VALUE TO CHILD COMPONENTS*/
-    <PostContext.Provider
-      value={{
-        posts: searchedPosts,
-        onAddPost: handleAddPost,
-        onClearPosts: handleClearPosts,
-        /*This context api we created, we named it PostContext. However, to make our code cleaner we could create a second context such as SearchContext for
-    the two below - but for now to keep it simple we will put em all together. */
-        searchQuery,
-        setSearchQuery,
-      }}
-    >
-      {children}
-    </PostContext.Provider>
-  );
+  /*EXPLAINING CONTEXT OPTIMIZATION NOTE 1/2:
+  Here when the state of the App changes and causes the context to rerender
+  for this reason we put this Context values in a Memo and added the component
+  Main into a memo to avoid unwanted rerender on it */
+  const value = useMemo(() => {
+    return {
+      posts: searchedPosts,
+      onAddPost: handleAddPost,
+      onClearPosts: handleClearPosts,
+      /*If any of this values updates, then all components consuming this context
+      will rerender - for this reason is a good idea to serapate context by topic
+      For example: Post in one context and search in another one, if one changes
+      not all consumer components will have to rerender. */
+      searchQuery,
+      setSearchQuery,
+    };
+  }, [searchedPosts, searchQuery]);
+
+  return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
 }
 
 function usePosts() {
   const context = useContext(PostContext);
   if (context === undefined)
     throw new Error("PostContext was used outside of the PostProvider");
-  /*This error is to let know if the context was attempted to be consumed 
-  outside of the child components (or scope) where the context was defined  
-  Ex. if usePosts is called from the App component then it is out of this context
-  scope*/
+
   return context;
 }
 

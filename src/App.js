@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
 import { PostProvider, usePosts } from "./PostProvider";
 import { Test, SlowComponent } from "./Test";
@@ -73,14 +73,17 @@ function Results() {
   return <p>🚀 {posts.length} atomic posts found</p>;
 }
 
-function Main() {
+/*EXPLAINING CONTEXT OPTIMIZATION NOTE 2/2:
+Using memo on Main just for showcasing - but not really necessary here - 
+the child components of main are consumers of the PostContext */
+const Main = memo(function Main() {
   return (
     <main>
       <FormAddPost />
       <Posts />
     </main>
   );
-}
+});
 
 function Posts() {
   return (
